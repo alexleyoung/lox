@@ -69,7 +69,7 @@ func run(source string) {
 	}
 }
 
-func loxError(line int, msg string) {
+func Error(line int, msg string) {
 	report(line, "", msg)
 }
 
