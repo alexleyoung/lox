@@ -1,15 +1,15 @@
-package parser
+package main
 
 import "fmt"
 
 type Token struct {
 	Type    TokenType
 	Lexeme  string
-	Literal Object
+	Literal *Object
 	Line    int
 }
 
-func NewToken(tokenType TokenType, lexeme string, literal Object, line int) Token {
+func NewToken(tokenType TokenType, lexeme string, literal *Object, line int) Token {
 	return Token{
 		Type:    tokenType,
 		Lexeme:  lexeme,

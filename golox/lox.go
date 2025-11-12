@@ -4,8 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-
-	"github.com/alexleyoung/golox/fe"
 )
 
 var hasError = false
@@ -62,7 +60,7 @@ func runPrompt() {
 }
 
 func run(source string) {
-	lexer := fe.NewLexer(source)
+	lexer := NewLexer(source)
 	tokens := lexer.ScanTokens()
 	for _, token := range tokens {
 		fmt.Println(token)
