@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-var hasError = false
+var hadError = false
 
 func main() {
 	args := os.Args
@@ -33,7 +33,7 @@ func runFile(path string) error {
 
 	run(string(f))
 
-	if hasError {
+	if hadError {
 		os.Exit(65)
 	}
 
@@ -55,7 +55,7 @@ func runPrompt() {
 
 		line := scanner.Text()
 		run(line)
-		hasError = false
+		hadError = false
 	}
 }
 
@@ -73,5 +73,5 @@ func Error(line int, msg string) {
 
 func report(line int, where, msg string) {
 	fmt.Println("[line ", line, "] Error", where, ": ", msg)
-	hasError = true
+	hadError = true
 }
