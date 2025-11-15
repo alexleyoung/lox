@@ -1,7 +1,5 @@
 package main
 
-import "fmt"
-
 type Token struct {
 	Type    TokenType
 	Lexeme  string
@@ -9,7 +7,7 @@ type Token struct {
 	Line    int
 }
 
-func NewToken(tokenType TokenType, lexeme string, literal *Object, line int) Token {
+func NewToken(tokenType TokenType, lexeme string, literal any, line int) Token {
 	return Token{
 		Type:    tokenType,
 		Lexeme:  lexeme,
@@ -19,7 +17,7 @@ func NewToken(tokenType TokenType, lexeme string, literal *Object, line int) Tok
 }
 
 func (t Token) String() string {
-	return fmt.Sprintf("%s %s %s", t.Type, t.Lexeme, t.Literal)
+	return t.Lexeme
 }
 
 type TokenType int

@@ -9,6 +9,18 @@ import (
 var hadError = false
 
 func main() {
+	expr := NewBinaryExpr(
+		NewToken(STAR, "*", nil, 0),
+		NewUnaryExpr(
+			NewToken(MINUS, "-", nil, 0),
+			NewLiteralExpr(123),
+		),
+		NewGroupingExpr(
+			NewLiteralExpr(45.27),
+		),
+	)
+	fmt.Println(expr.parenthesize())
+
 	args := os.Args
 	switch len(args) {
 	case 1:
