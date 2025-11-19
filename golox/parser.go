@@ -1,5 +1,7 @@
 package main
 
+import "slices"
+
 type Parser struct {
 	tokens  []Token
 	current int
@@ -25,12 +27,30 @@ func (p *Parser) equality() Expr {
 	return expr
 }
 
+func (p *Parser) comparison() Expr {
+	return BinaryExpr{}
+}
+
+func (p *Parser) term() Expr {
+	return BinaryExpr{}
+}
+
+func (p *Parser) factor() Expr {
+	return BinaryExpr{}
+}
+
+func (p *Parser) unary() Expr {
+	return BinaryExpr{}
+}
+
+func (p *Parser) primary() Expr {
+	return BinaryExpr{}
+}
+
 func (p *Parser) match(types ...TokenType) bool {
-	for _, t := range types {
-		if p.check(t) {
-			p.advance()
-			return true
-		}
+	if slices.ContainsFunc(types, p.check) {
+		p.advance()
+		return true
 	}
 	return false
 }
