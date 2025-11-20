@@ -85,7 +85,11 @@ func run(source string) {
 	}
 }
 
-func Error(tok Token, msg string) {
+func LexError(line int, msg string) {
+	report(line, "", msg)
+}
+
+func ParseError(tok Token, msg string) {
 	if tok.Type == EOF {
 		report(tok.Line, " at end", msg)
 	}

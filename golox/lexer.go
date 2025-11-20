@@ -116,7 +116,7 @@ func (s *Lexer) scanToken() {
 		} else if isAlpha(c) {
 			s.scanIdentifier()
 		} else {
-			Error(s.line, "Unexpected character: '"+string(c)+"'")
+			LexError(s.line, "Unexpected character: '"+string(c)+"'")
 		}
 	}
 }
@@ -143,7 +143,7 @@ func (s *Lexer) scanString() {
 	}
 
 	if s.isAtEnd() {
-		Error(s.line, "Unterminated string")
+		LexError(s.line, "Unterminated string")
 	}
 
 	// consume closing "
@@ -168,11 +168,18 @@ func (s *Lexer) scanNumber() {
 
 	value, err := strconv.ParseFloat((s.source[s.start:s.current]), 10)
 	if err != nil {
-		Error(s.line, "Invalid number: "+s.source[s.start:s.current])
+		LexError(s.line, "Invalid number: "+s.source[s.start:s.current])
 	}
 	s.addToken(NUMBER, value)
 }
 
+// create and add token, start to current, to tokens
+func (s *Lexer) addToken(tok TokenType, literal any) {
+	text := string(s.source[s.start:s.current])
+	s.tokens = append(s.tokens, Token{Type: tok, Lexeme: text, Literal: literal, Line: s.line})
+}
+
+// consumes character iff current matches expected
 func (s *Lexer) match(expected byte) bool {
 	if s.isAtEnd() || s.source[s.current] != expected {
 		return false
@@ -182,6 +189,7 @@ func (s *Lexer) match(expected byte) bool {
 	return true
 }
 
+// peek but dont consume current character
 func (s *Lexer) peek() byte {
 	if s.isAtEnd() {
 		return 0
@@ -190,11 +198,23 @@ func (s *Lexer) peek() byte {
 	return s.source[s.current]
 }
 
+// peek next character
 func (s *Lexer) peekNext() byte {
 	if s.current+1 >= len(s.source) {
 		return 0
 	}
 	return s.source[s.current+1]
+}
+
+// consume and advance one character
+func (s *Lexer) advance() byte {
+	curr := s.source[s.current]
+	s.current++
+	return curr
+}
+
+func (s *Lexer) isAtEnd() bool {
+	return s.current >= len(s.source)
 }
 
 func isAlpha(c byte) bool {
@@ -207,19 +227,4 @@ func isAlphaNumeric(c byte) bool {
 
 func isDigit(c byte) bool {
 	return c >= '0' && c <= '9'
-}
-
-func (s *Lexer) isAtEnd() bool {
-	return s.current >= len(s.source)
-}
-
-func (s *Lexer) advance() byte {
-	curr := s.source[s.current]
-	s.current++
-	return curr
-}
-
-func (s *Lexer) addToken(tok TokenType, literal any) {
-	text := string(s.source[s.start:s.current])
-	s.tokens = append(s.tokens, Token{Type: tok, Lexeme: text, Literal: literal, Line: s.line})
 }

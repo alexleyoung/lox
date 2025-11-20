@@ -143,7 +143,7 @@ func (p *Parser) previous() Token {
 }
 
 func parseError(tok Token, msg string) error {
-	Error(tok, msg)
+	ParseError(tok, msg)
 	// return some arbitrary error
 	return errors.New("parseError")
 }
