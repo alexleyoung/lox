@@ -19,7 +19,13 @@ func main() {
 			NewLiteralExpr(45.27),
 		),
 	)
-	fmt.Println(expr.parenthesize())
+	printer := &AstPrinter{}
+	str, err := printer.Print(expr)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	fmt.Println(str)
 
 	args := os.Args
 	switch len(args) {

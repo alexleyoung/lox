@@ -1,9 +1,7 @@
 package main
 
-import "fmt"
-
 type Expr interface {
-	parenthesize() string
+	accept(v Visitor) (any, error)
 }
 
 type BinaryExpr struct {
@@ -40,21 +38,18 @@ func NewUnaryExpr(op Token, expr Expr) UnaryExpr {
 	return UnaryExpr{Op: op, Expr: expr}
 }
 
-func (e BinaryExpr) parenthesize() string {
-	return "(" + e.Op.String() + " " + e.Left.parenthesize() + " " + e.Right.parenthesize() + ")"
+func (e BinaryExpr) accept(v Visitor) (any, error) {
+	return v.visitBinaryExpr(e)
 }
 
-func (e GroupingExpr) parenthesize() string {
-	return "(group " + e.Expr.parenthesize() + ")"
+func (e GroupingExpr) accept(v Visitor) (any, error) {
+	return v.visitGroupingExpr(e)
 }
 
-func (e LiteralExpr) parenthesize() string {
-	if e.Value == nil {
-		return "nil"
-	}
-	return fmt.Sprintf("%v", e.Value)
+func (e LiteralExpr) accept(v Visitor) (any, error) {
+	return v.visitLiteralExpr(e)
 }
 
-func (e UnaryExpr) parenthesize() string {
-	return "(" + e.Op.String() + " " + e.Expr.parenthesize() + ")"
+func (e UnaryExpr) accept(v Visitor) (any, error) {
+	return v.visitUnaryExpr(e)
 }
