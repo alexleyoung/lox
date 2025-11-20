@@ -80,9 +80,13 @@ func runPrompt() {
 func run(source string) {
 	lexer := NewLexer(source)
 	tokens := lexer.ScanTokens()
-	for _, token := range tokens {
-		fmt.Println(token)
+	parser := NewParser(tokens)
+	expr, _ := parser.Parse()
+	if hadError {
+		return
 	}
+
+	fmt.Println((&AstPrinter{}).Print(expr))
 }
 
 func LexError(line int, msg string) {
@@ -92,6 +96,8 @@ func LexError(line int, msg string) {
 func ParseError(tok Token, msg string) {
 	if tok.Type == EOF {
 		report(tok.Line, " at end", msg)
+	} else {
+		report(tok.Line, " at '"+tok.Lexeme+"'", msg)
 	}
 }
 
