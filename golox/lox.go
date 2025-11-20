@@ -85,8 +85,10 @@ func run(source string) {
 	}
 }
 
-func Error(line int, msg string) {
-	report(line, "", msg)
+func Error(tok Token, msg string) {
+	if tok.Type == EOF {
+		report(tok.Line, " at end", msg)
+	}
 }
 
 func report(line int, where, msg string) {
