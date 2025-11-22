@@ -38,6 +38,7 @@ func (s *Lexer) ScanTokens() []Token {
 		s.scanToken()
 	}
 
+	s.tokens = append(s.tokens, Token{Type: EOF, Lexeme: "", Literal: nil, Line: s.line})
 	return s.tokens
 }
 
@@ -65,6 +66,10 @@ func (s *Lexer) scanToken() {
 		s.addToken(SEMICOLON, nil)
 	case '*':
 		s.addToken(STAR, nil)
+	case '?':
+		s.addToken(QUESTION, nil)
+	case ':':
+		s.addToken(COLON, nil)
 
 	// two character tokens
 	case '!':

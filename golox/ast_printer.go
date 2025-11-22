@@ -38,6 +38,10 @@ func (p *AstPrinter) visitUnaryExpr(expr UnaryExpr) (any, error) {
 	return p.parenthesize(expr.Op.Lexeme, expr.Expr)
 }
 
+func (p *AstPrinter) visitTernaryExpr(expr TernaryExpr) (any, error) {
+	return p.parenthesize("?:", expr.Condition, expr.ThenBranch, expr.ElseBranch)
+}
+
 func (p *AstPrinter) parenthesize(name string, exprs ...Expr) (string, error) {
 	var builder strings.Builder
 	builder.WriteString("(")

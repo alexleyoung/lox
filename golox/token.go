@@ -34,6 +34,8 @@ const (
 	SEMICOLON
 	SLASH
 	STAR
+	QUESTION
+	COLON
 
 	BANG
 	BANG_EQUAL
@@ -92,6 +94,10 @@ func (t TokenType) String() string {
 		return "SLASH"
 	case STAR:
 		return "STAR"
+	case QUESTION:
+		return "QUESTION"
+	case COLON:
+		return "COLON"
 
 	case BANG:
 		return "BANG"

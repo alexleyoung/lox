@@ -82,6 +82,7 @@ func run(source string) {
 	tokens := lexer.ScanTokens()
 	parser := NewParser(tokens)
 	expr, _ := parser.Parse()
+
 	if hadError {
 		return
 	}
