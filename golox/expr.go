@@ -1,7 +1,7 @@
 package main
 
 type Expr interface {
-	accept(v Visitor) (any, error)
+	Accept(v Visitor) (any, error)
 }
 
 type BinaryExpr struct {
@@ -48,22 +48,22 @@ func NewTernaryExpr(condition, thenBranch, elseBranch Expr) TernaryExpr {
 	return TernaryExpr{Condition: condition, ThenBranch: thenBranch, ElseBranch: elseBranch}
 }
 
-func (e BinaryExpr) accept(v Visitor) (any, error) {
-	return v.visitBinaryExpr(e)
+func (e BinaryExpr) Accept(v Visitor) (any, error) {
+	return v.VisitBinaryExpr(e)
 }
 
-func (e GroupingExpr) accept(v Visitor) (any, error) {
-	return v.visitGroupingExpr(e)
+func (e GroupingExpr) Accept(v Visitor) (any, error) {
+	return v.VisitGroupingExpr(e)
 }
 
-func (e LiteralExpr) accept(v Visitor) (any, error) {
-	return v.visitLiteralExpr(e)
+func (e LiteralExpr) Accept(v Visitor) (any, error) {
+	return v.VisitLiteralExpr(e)
 }
 
-func (e UnaryExpr) accept(v Visitor) (any, error) {
-	return v.visitUnaryExpr(e)
+func (e UnaryExpr) Accept(v Visitor) (any, error) {
+	return v.VisitUnaryExpr(e)
 }
 
-func (e TernaryExpr) accept(v Visitor) (any, error) {
-	return v.visitTernaryExpr(e)
+func (e TernaryExpr) Accept(v Visitor) (any, error) {
+	return v.VisitTernaryExpr(e)
 }

@@ -8,7 +8,7 @@ import (
 type AstPrinter struct{}
 
 func (p *AstPrinter) Print(expr Expr) (string, error) {
-	result, err := expr.accept(p)
+	result, err := expr.Accept(p)
 	if err != nil {
 		return "", err
 	}
@@ -19,26 +19,26 @@ func (p *AstPrinter) Print(expr Expr) (string, error) {
 	return s, nil
 }
 
-func (p *AstPrinter) visitBinaryExpr(expr BinaryExpr) (any, error) {
+func (p *AstPrinter) VisitBinaryExpr(expr BinaryExpr) (any, error) {
 	return p.parenthesize(expr.Op.Lexeme, expr.Left, expr.Right)
 }
 
-func (p *AstPrinter) visitGroupingExpr(expr GroupingExpr) (any, error) {
+func (p *AstPrinter) VisitGroupingExpr(expr GroupingExpr) (any, error) {
 	return p.parenthesize("group", expr.Expr)
 }
 
-func (p *AstPrinter) visitLiteralExpr(expr LiteralExpr) (any, error) {
+func (p *AstPrinter) VisitLiteralExpr(expr LiteralExpr) (any, error) {
 	if expr.Value == nil {
 		return "nil", nil
 	}
 	return fmt.Sprintf("%v", expr.Value), nil
 }
 
-func (p *AstPrinter) visitUnaryExpr(expr UnaryExpr) (any, error) {
+func (p *AstPrinter) VisitUnaryExpr(expr UnaryExpr) (any, error) {
 	return p.parenthesize(expr.Op.Lexeme, expr.Expr)
 }
 
-func (p *AstPrinter) visitTernaryExpr(expr TernaryExpr) (any, error) {
+func (p *AstPrinter) VisitTernaryExpr(expr TernaryExpr) (any, error) {
 	return p.parenthesize("?:", expr.Condition, expr.ThenBranch, expr.ElseBranch)
 }
 
@@ -48,7 +48,7 @@ func (p *AstPrinter) parenthesize(name string, exprs ...Expr) (string, error) {
 	builder.WriteString(name)
 	for _, expr := range exprs {
 		builder.WriteString(" ")
-		s, err := expr.accept(p)
+		s, err := expr.Accept(p)
 		if err != nil {
 			return "", err
 		}
