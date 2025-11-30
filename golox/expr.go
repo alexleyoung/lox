@@ -23,9 +23,9 @@ type UnaryExpr struct {
 }
 
 type TernaryExpr struct {
-	Condition  Expr
-	ThenBranch Expr
-	ElseBranch Expr
+	Guard Expr
+	Then  Expr
+	Else  Expr
 }
 
 func NewBinaryExpr(op Token, left, right Expr) BinaryExpr {
@@ -44,8 +44,8 @@ func NewUnaryExpr(op Token, expr Expr) UnaryExpr {
 	return UnaryExpr{Op: op, Expr: expr}
 }
 
-func NewTernaryExpr(condition, thenBranch, elseBranch Expr) TernaryExpr {
-	return TernaryExpr{Condition: condition, ThenBranch: thenBranch, ElseBranch: elseBranch}
+func NewTernaryExpr(guard, thenBranch, elseBranch Expr) TernaryExpr {
+	return TernaryExpr{Guard: guard, Then: thenBranch, Else: elseBranch}
 }
 
 func (e BinaryExpr) Accept(v Visitor) (any, error) {

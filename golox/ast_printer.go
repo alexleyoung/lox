@@ -39,7 +39,7 @@ func (p *AstPrinter) VisitUnaryExpr(expr UnaryExpr) (any, error) {
 }
 
 func (p *AstPrinter) VisitTernaryExpr(expr TernaryExpr) (any, error) {
-	return p.parenthesize("?:", expr.Condition, expr.ThenBranch, expr.ElseBranch)
+	return p.parenthesize("?:", expr.Guard, expr.Then, expr.Else)
 }
 
 func (p *AstPrinter) parenthesize(name string, exprs ...Expr) (string, error) {
