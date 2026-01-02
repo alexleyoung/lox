@@ -1,7 +1,6 @@
 from least to most precedence
 
-expression     → ternary ;
-ternary        → equality ( "?" ternary ":" ternary )? ;
+expression     → equality ;
 equality       → comparison ( ( "!=" | "==" ) comparison )* ;
 comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
 term           → factor ( ( "-" | "+" ) factor )* ;
