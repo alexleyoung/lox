@@ -19,7 +19,32 @@ func (p *Parser) Parse() (Expr, error) {
 }
 
 func (p *Parser) expression() (Expr, error) {
-	return p.equality()
+	return p.ternary()
+}
+
+func (p *Parser) ternary() (Expr, error) {
+	expr, err := p.equality()
+	if err != nil {
+		return nil, err
+	}
+
+	if p.match(QUESTION) {
+		thenBranch, err := p.ternary()
+		if err != nil {
+			return nil, err
+		}
+		_, err = p.consume(COLON, "Expect ':' after then branch of ternary expression.")
+		if err != nil {
+			return nil, err
+		}
+		elseBranch, err := p.ternary()
+		if err != nil {
+			return nil, err
+		}
+		return NewTernaryExpr(expr, thenBranch, elseBranch), nil
+	}
+
+	return expr, nil
 }
 
 func (p *Parser) equality() (Expr, error) {
