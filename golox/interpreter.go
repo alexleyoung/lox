@@ -50,10 +50,18 @@ func (i *Interpreter) VisitBinaryExpr(expr BinaryExpr) (any, error) {
 	// use + for string concat and number addition
 	case PLUS:
 		switch left.(type) {
-		case string:
-			return left.(string) + right.(string), nil
 		case float64:
+			switch right := right.(type) {
+			case string:
+				return i.stringify(left) + right, nil
+			}
 			return left.(float64) + right.(float64), nil
+		case string:
+			switch right.(type) {
+			case float64:
+				return left.(string) + i.stringify(right), nil
+			}
+			return left.(string) + right.(string), nil
 		}
 
 	// only supported between numbers
