@@ -6,27 +6,10 @@ import (
 	"os"
 )
 
+var interpreter = Interpreter{}
 var hadError = false
 
 func main() {
-	expr := NewBinaryExpr(
-		NewToken(STAR, "*", nil, 0),
-		NewUnaryExpr(
-			NewToken(MINUS, "-", nil, 0),
-			NewLiteralExpr(123),
-		),
-		NewGroupingExpr(
-			NewLiteralExpr(45.27),
-		),
-	)
-	printer := &AstPrinter{}
-	str, err := printer.Print(expr)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-	fmt.Println(str)
-
 	args := os.Args
 	switch len(args) {
 	case 1:
@@ -87,7 +70,8 @@ func run(source string) {
 		return
 	}
 
-	fmt.Println((&AstPrinter{}).Print(expr))
+	// fmt.Println((&AstPrinter{}).Print(expr))
+	interpreter.Interpret(expr)
 }
 
 func LexError(line int, msg string) {

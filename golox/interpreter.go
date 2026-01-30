@@ -1,5 +1,9 @@
 package main
 
+import (
+	"fmt"
+)
+
 type Interpreter struct{}
 
 func (i *Interpreter) VisitLiteralExpr(expr LiteralExpr) (any, error) {
@@ -24,10 +28,6 @@ func (i *Interpreter) VisitUnaryExpr(expr UnaryExpr) (any, error) {
 
 func (i *Interpreter) VisitGroupingExpr(expr GroupingExpr) (any, error) {
 	return i.evaluate(expr.Expr)
-}
-
-func (i *Interpreter) evaluate(expr Expr) (any, error) {
-	return expr.Accept(i)
 }
 
 func (i *Interpreter) VisitBinaryExpr(expr BinaryExpr) (any, error) {
@@ -110,4 +110,31 @@ func (i *Interpreter) isTruthy(v any) bool {
 	default:
 		return true
 	}
+
+}
+
+func (i *Interpreter) evaluate(expr Expr) (any, error) {
+	return expr.Accept(i)
+}
+
+func (i *Interpreter) stringify(obj any) string {
+	if obj == nil {
+		return "nil"
+	}
+
+	if num, ok := obj.(float64); ok {
+		text := fmt.Sprintf("%v", num)
+		return text
+	}
+
+	return fmt.Sprintf("%v", obj)
+}
+
+func (i *Interpreter) Interpret(expr Expr) (any, error) {
+	value, err := i.evaluate(expr)
+	if err != nil {
+		return nil, err
+	}
+	print(i.stringify(value))
+	return value, nil
 }
