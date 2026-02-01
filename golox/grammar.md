@@ -1,4 +1,4 @@
-from least to most precedence
+# expressions from least to most precedence
 
 expression     → equality ;
 equality       → comparison ( ( "!=" | "==" ) comparison )* ;
@@ -8,3 +8,12 @@ factor         → unary ( ( "/" | "*" ) unary )* ;
 unary          → ( "!" | "-" ) unary | primary ;
 primary        → NUMBER | STRING | "true" | "false" | "nil"
                | "(" expression ")" ;
+
+# statements
+program        → statement* EOF ;
+
+statement      → exprStmt
+               | printStmt ;
+
+exprStmt       → expression ";" ;
+printStmt      → "print" expression ";" ;
