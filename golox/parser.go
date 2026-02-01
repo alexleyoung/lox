@@ -14,8 +14,45 @@ func NewParser(tokens []Token) *Parser {
 	return &Parser{tokens, 0}
 }
 
-func (p *Parser) Parse() (Expr, error) {
-	return p.expression()
+func (p *Parser) Parse() ([]Stmt, error) {
+	statements := make([]Stmt, 0)
+
+	for !p.isAtEnd() {
+		statement, err := p.statement()
+		if err != nil {
+			return nil, err
+		}
+		statements = append(statements, statement)
+	}
+
+	return statements, nil
+}
+
+func (p *Parser) statement() (Stmt, error) {
+	// Check non-expression statements first and leave as a fallthrough
+	// "Hard to proactively recognize an expression from its first token"
+	if p.match(PRINT) {
+		return p.printStatement()
+	}
+	return p.expressionStatement()
+}
+
+func (p *Parser) printStatement() (Stmt, error) {
+	expr, err := p.expression()
+	if err != nil {
+		return nil, err
+	}
+	p.consume(SEMICOLON, "Expect ';' after value.")
+	return NewPrintStmt(expr), nil
+}
+
+func (p *Parser) expressionStatement() (Stmt, error) {
+	expr, err := p.expression()
+	if err != nil {
+		return nil, err
+	}
+	p.consume(SEMICOLON, "Expect ';' after value.")
+	return NewExpressionStmt(expr), nil
 }
 
 func (p *Parser) expression() (Expr, error) {
