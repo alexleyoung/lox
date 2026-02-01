@@ -64,14 +64,14 @@ func run(source string) {
 	lexer := NewLexer(source)
 	tokens := lexer.ScanTokens()
 	parser := NewParser(tokens)
-	expr, _ := parser.Parse()
+	statements, _ := parser.Parse()
 
 	if hadError {
 		return
 	}
 
 	// fmt.Println((&AstPrinter{}).Print(expr))
-	interpreter.Interpret(expr)
+	interpreter.Interpret(statements)
 }
 
 func LexError(line int, msg string) {

@@ -9,6 +9,6 @@ type Visitor interface {
 }
 
 type StmtVisitor interface {
-	VisitExpressionStmt(stmt ExpressionStmt) (any, error)
-	VisitPrintStmt(stmt PrintStmt) (any, error)
+	VisitExpressionStmt(stmt ExpressionStmt) error
+	VisitPrintStmt(stmt PrintStmt) error
 }

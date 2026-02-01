@@ -1,7 +1,7 @@
 package main
 
 type Stmt interface {
-	Accept(v StmtVisitor) (any, error)
+	Accept(v StmtVisitor) error
 }
 
 type ExpressionStmt struct {
@@ -20,10 +20,10 @@ func NewPrintStmt(expr Expr) PrintStmt {
 	return PrintStmt{Expr: expr}
 }
 
-func (s ExpressionStmt) Accept(v StmtVisitor) (any, error) {
+func (s ExpressionStmt) Accept(v StmtVisitor) error {
 	return v.VisitExpressionStmt(s)
 }
 
-func (s PrintStmt) Accept(v StmtVisitor) (any, error) {
+func (s PrintStmt) Accept(v StmtVisitor) error {
 	return v.VisitPrintStmt(s)
 }

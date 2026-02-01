@@ -6,6 +6,33 @@ import (
 
 type Interpreter struct{}
 
+func (i *Interpreter) Interpret(statements []Stmt) error {
+	for _, statement := range statements {
+		err := i.execute(statement)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (i *Interpreter) VisitPrintStmt(stmt PrintStmt) error {
+	value, err := i.evaluate(stmt.Expr)
+	if err != nil {
+		return err
+	}
+	fmt.Print(i.stringify(value))
+	return nil
+}
+
+func (i *Interpreter) VisitExpressionStmt(stmt ExpressionStmt) error {
+	_, err := i.evaluate(stmt.Expr)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (i *Interpreter) VisitLiteralExpr(expr LiteralExpr) (any, error) {
 	return expr.Value, nil
 }
@@ -138,11 +165,6 @@ func (i *Interpreter) stringify(obj any) string {
 	return fmt.Sprintf("%v", obj)
 }
 
-func (i *Interpreter) Interpret(expr Expr) (any, error) {
-	value, err := i.evaluate(expr)
-	if err != nil {
-		return nil, err
-	}
-	print(i.stringify(value))
-	return value, nil
+func (i *Interpreter) execute(stmt Stmt) error {
+	return stmt.Accept(i)
 }
