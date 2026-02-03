@@ -4,21 +4,21 @@ import "strconv"
 
 var keywords = map[string]TokenType{
 	"and":    AND,
-	"class":  CLASS,
-	"else":   ELSE,
-	"false":  FALSE,
-	"fun":    FUN,
-	"for":    FOR,
-	"if":     IF,
-	"nil":    NIL,
 	"or":     OR,
+	"if":     IF,
+	"else":   ELSE,
+	"true":   TRUE,
+	"false":  FALSE,
+	"for":    FOR,
+	"while":  WHILE,
+	"nil":    NIL,
 	"print":  PRINT,
 	"return": RETURN,
+	"fun":    FUN,
+	"class":  CLASS,
+	"var":    VAR,
 	"super":  SUPER,
 	"this":   THIS,
-	"true":   TRUE,
-	"var":    VAR,
-	"while":  WHILE,
 }
 
 type Lexer struct {
@@ -26,20 +26,22 @@ type Lexer struct {
 	tokens []Token
 
 	start, current, line int
+	errors               []error
+	reporter             *ErrorReporter
 }
 
 func NewLexer(source string) *Lexer {
-	return &Lexer{source: source}
+	return &Lexer{source: source, reporter: NewErrorReporter(), errors: make([]error, 0)}
 }
 
-func (s *Lexer) ScanTokens() []Token {
+func (s *Lexer) ScanTokens() ([]Token, []error) {
 	for !s.isAtEnd() {
 		s.start = s.current
 		s.scanToken()
 	}
 
 	s.tokens = append(s.tokens, Token{Type: EOF, Lexeme: "", Literal: nil, Line: s.line})
-	return s.tokens
+	return s.tokens, s.errors
 }
 
 func (s *Lexer) scanToken() {
@@ -122,7 +124,9 @@ func (s *Lexer) scanToken() {
 		} else if isAlpha(c) {
 			s.scanIdentifier()
 		} else {
-			LexError(s.line, "Unexpected character: '"+string(c)+"'")
+			err := NewLexerError(s.line, "Unexpected character: '"+string(c)+"'")
+			s.reporter.Report(err)
+			s.errors = append(s.errors, err)
 		}
 	}
 }
@@ -149,7 +153,10 @@ func (s *Lexer) scanString() {
 	}
 
 	if s.isAtEnd() {
-		LexError(s.line, "Unterminated string")
+		err := NewLexerError(s.line, "Unterminated string")
+		s.reporter.Report(err)
+		s.errors = append(s.errors, err)
+		return
 	}
 
 	// consume closing "
@@ -174,7 +181,10 @@ func (s *Lexer) scanNumber() {
 
 	value, err := strconv.ParseFloat((s.source[s.start:s.current]), 10)
 	if err != nil {
-		LexError(s.line, "Invalid number: "+s.source[s.start:s.current])
+		err2 := NewLexerError(s.line, "Invalid number: "+s.source[s.start:s.current])
+		s.reporter.Report(err2)
+		s.errors = append(s.errors, err2)
+		return
 	}
 	s.addToken(NUMBER, value)
 }

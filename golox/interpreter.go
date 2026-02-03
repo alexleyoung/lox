@@ -4,7 +4,14 @@ import (
 	"fmt"
 )
 
-type Interpreter struct{}
+type Interpreter struct {
+	environment Environment
+	reporter    *ErrorReporter
+}
+
+func NewInterpreter() *Interpreter {
+	return &Interpreter{environment: NewEnvironment(), reporter: NewErrorReporter()}
+}
 
 func (i *Interpreter) Interpret(statements []Stmt) error {
 	for _, statement := range statements {
@@ -13,6 +20,21 @@ func (i *Interpreter) Interpret(statements []Stmt) error {
 			return err
 		}
 	}
+	return nil
+}
+
+func (i *Interpreter) VisitVariableStmt(stmt VariableStmt) error {
+	var value any = nil
+	var err error
+
+	if stmt.Initializer != nil {
+		value, err = i.evaluate(stmt.Initializer)
+		if err != nil {
+			return err
+		}
+	}
+
+	i.environment.define(stmt.Name.Lexeme, value)
 	return nil
 }
 
@@ -33,6 +55,14 @@ func (i *Interpreter) VisitExpressionStmt(stmt ExpressionStmt) error {
 	return nil
 }
 
+func (i *Interpreter) VisitVariableExpr(expr VariableExpr) (any, error) {
+	value, err := i.environment.get(expr.Name)
+	if err != nil {
+		return nil, NewRuntimeError(expr.Name, err.Error())
+	}
+	return value, nil
+}
+
 func (i *Interpreter) VisitLiteralExpr(expr LiteralExpr) (any, error) {
 	return expr.Value, nil
 }
@@ -47,7 +77,10 @@ func (i *Interpreter) VisitUnaryExpr(expr UnaryExpr) (any, error) {
 	case BANG:
 		return !i.isTruthy(v), nil
 	case MINUS:
-		return -v.(float64), nil
+		if num, ok := v.(float64); ok {
+			return -num, nil
+		}
+		return nil, NewRuntimeError(expr.Op, "Operand must be a number.")
 	}
 
 	return nil, nil
@@ -69,37 +102,73 @@ func (i *Interpreter) VisitBinaryExpr(expr BinaryExpr) (any, error) {
 
 	switch expr.Op.Type {
 	case SLASH:
-		return left.(float64) / right.(float64), nil
+		leftNum, leftOk := left.(float64)
+		rightNum, rightOk := right.(float64)
+		if !leftOk || !rightOk {
+			return nil, NewRuntimeError(expr.Op, "Operands must be numbers.")
+		}
+		if rightNum == 0 {
+			return nil, NewRuntimeError(expr.Op, "Division by zero.")
+		}
+		return leftNum / rightNum, nil
 	case MINUS:
-		return left.(float64) - right.(float64), nil
+		leftNum, leftOk := left.(float64)
+		rightNum, rightOk := right.(float64)
+		if !leftOk || !rightOk {
+			return nil, NewRuntimeError(expr.Op, "Operands must be numbers.")
+		}
+		return leftNum - rightNum, nil
 	case STAR:
-		return left.(float64) * right.(float64), nil
+		leftNum, leftOk := left.(float64)
+		rightNum, rightOk := right.(float64)
+		if !leftOk || !rightOk {
+			return nil, NewRuntimeError(expr.Op, "Operands must be numbers.")
+		}
+		return leftNum * rightNum, nil
 	// use + for string concat and number addition
 	case PLUS:
-		switch left.(type) {
+		switch left := left.(type) {
 		case float64:
 			switch right := right.(type) {
 			case string:
 				return i.stringify(left) + right, nil
-			}
-			return left.(float64) + right.(float64), nil
-		case string:
-			switch right.(type) {
 			case float64:
-				return left.(string) + i.stringify(right), nil
+				return left + right, nil
 			}
-			return left.(string) + right.(string), nil
+		case string:
+			return left + i.stringify(right), nil
 		}
+		return nil, NewRuntimeError(expr.Op, "Operands must be two numbers or two strings.")
 
 	// only supported between numbers
 	case LESS:
-		return left.(float64) < right.(float64), nil
+		leftNum, leftOk := left.(float64)
+		rightNum, rightOk := right.(float64)
+		if !leftOk || !rightOk {
+			return nil, NewRuntimeError(expr.Op, "Operands must be numbers.")
+		}
+		return leftNum < rightNum, nil
 	case LESS_EQUAL:
-		return left.(float64) <= right.(float64), nil
+		leftNum, leftOk := left.(float64)
+		rightNum, rightOk := right.(float64)
+		if !leftOk || !rightOk {
+			return nil, NewRuntimeError(expr.Op, "Operands must be numbers.")
+		}
+		return leftNum <= rightNum, nil
 	case GREATER:
-		return left.(float64) > right.(float64), nil
+		leftNum, leftOk := left.(float64)
+		rightNum, rightOk := right.(float64)
+		if !leftOk || !rightOk {
+			return nil, NewRuntimeError(expr.Op, "Operands must be numbers.")
+		}
+		return leftNum > rightNum, nil
 	case GREATER_EQUAL:
-		return left.(float64) >= right.(float64), nil
+		leftNum, leftOk := left.(float64)
+		rightNum, rightOk := right.(float64)
+		if !leftOk || !rightOk {
+			return nil, NewRuntimeError(expr.Op, "Operands must be numbers.")
+		}
+		return leftNum >= rightNum, nil
 
 	case EQUAL_EQUAL:
 		return left == right, nil
@@ -108,26 +177,6 @@ func (i *Interpreter) VisitBinaryExpr(expr BinaryExpr) (any, error) {
 	}
 
 	return nil, nil
-}
-
-func (i *Interpreter) VisitTernaryExpr(expr TernaryExpr) (any, error) {
-	condition, err := i.evaluate(expr.Guard)
-	if err != nil {
-		return nil, err
-	}
-	thenBranch, err := i.evaluate(expr.Then)
-	if err != nil {
-		return nil, err
-	}
-	elseBranch, err := i.evaluate(expr.Else)
-	if err != nil {
-		return nil, err
-	}
-
-	if i.isTruthy(condition) {
-		return thenBranch, nil
-	}
-	return elseBranch, nil
 }
 
 func (i *Interpreter) isTruthy(v any) bool {

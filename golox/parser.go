@@ -1,31 +1,69 @@
 package main
 
 import (
-	"errors"
 	"slices"
 )
 
 type Parser struct {
-	tokens  []Token
-	current int
+	tokens   []Token
+	current  int
+	reporter *ErrorReporter
 }
 
 func NewParser(tokens []Token) *Parser {
-	return &Parser{tokens, 0}
+	return &Parser{tokens: tokens, current: 0, reporter: NewErrorReporter()}
 }
 
 func (p *Parser) Parse() ([]Stmt, error) {
 	statements := make([]Stmt, 0)
 
 	for !p.isAtEnd() {
-		statement, err := p.statement()
+		statement, err := p.declaration()
 		if err != nil {
-			return nil, err
+			p.synchronize()
 		}
 		statements = append(statements, statement)
 	}
 
 	return statements, nil
+}
+
+func (p *Parser) HadError() bool {
+	return p.reporter.HadError()
+}
+
+func (p *Parser) declaration() (Stmt, error) {
+	if p.match(VAR) {
+		stmt, err := p.varDeclaration()
+		if err != nil {
+			p.synchronize()
+			return nil, err
+		}
+		return stmt, nil
+	}
+
+	return p.statement()
+}
+
+func (p *Parser) varDeclaration() (Stmt, error) {
+	name, err := p.consume(IDENTIFIER, "Expect variable name.")
+	if err != nil {
+		return nil, err
+	}
+
+	var initializer Expr
+	if p.match(EQUAL) {
+		initializer, err = p.expression()
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	_, err = p.consume(SEMICOLON, "Expect ';' after variable declaration.")
+	if err != nil {
+		return nil, err
+	}
+	return NewVariableStmt(name, initializer), nil
 }
 
 func (p *Parser) statement() (Stmt, error) {
@@ -42,7 +80,10 @@ func (p *Parser) printStatement() (Stmt, error) {
 	if err != nil {
 		return nil, err
 	}
-	p.consume(SEMICOLON, "Expect ';' after value.")
+	_, err = p.consume(SEMICOLON, "Expect ';' after value.")
+	if err != nil {
+		return nil, err
+	}
 	return NewPrintStmt(expr), nil
 }
 
@@ -51,7 +92,10 @@ func (p *Parser) expressionStatement() (Stmt, error) {
 	if err != nil {
 		return nil, err
 	}
-	p.consume(SEMICOLON, "Expect ';' after value.")
+	_, err = p.consume(SEMICOLON, "Expect ';' after value.")
+	if err != nil {
+		return nil, err
+	}
 	return NewExpressionStmt(expr), nil
 }
 
@@ -215,10 +259,10 @@ func (p *Parser) previous() Token {
 	return p.tokens[p.current-1]
 }
 
-func (p *Parser) parseError(tok Token, msg string) error {
-	ParseError(tok, msg)
-	// return some arbitrary error
-	return errors.New("parseError")
+func (p *Parser) parseError(tok Token, msg string) ParserError {
+	err := NewParserError(tok, msg)
+	p.reporter.Report(err)
+	return err
 }
 
 func (p *Parser) synchronize() {

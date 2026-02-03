@@ -38,8 +38,8 @@ func (p *AstPrinter) VisitUnaryExpr(expr UnaryExpr) (any, error) {
 	return p.parenthesize(expr.Op.Lexeme, expr.Expr)
 }
 
-func (p *AstPrinter) VisitTernaryExpr(expr TernaryExpr) (any, error) {
-	return p.parenthesize("?:", expr.Guard, expr.Then, expr.Else)
+func (p *AstPrinter) VisitVariableExpr(expr VariableExpr) (any, error) {
+	return expr.Name.Lexeme, nil
 }
 
 func (p *AstPrinter) parenthesize(name string, exprs ...Expr) (string, error) {

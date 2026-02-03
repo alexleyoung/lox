@@ -6,8 +6,7 @@ import (
 	"os"
 )
 
-var interpreter = Interpreter{}
-var hadError = false
+var reporter = NewErrorReporter()
 
 func main() {
 	args := os.Args
@@ -32,10 +31,18 @@ func runFile(path string) error {
 		return err
 	}
 
-	run(string(f))
-
-	if hadError {
-		os.Exit(65)
+	err = run(string(f))
+	if err != nil {
+		if err.Error() == "lexical error" {
+			os.Exit(65)
+		}
+		if err.Error() == "parse error" {
+			os.Exit(65)
+		}
+		if err.Error() == "runtime error" {
+			os.Exit(70)
+		}
+		return err
 	}
 
 	return nil
@@ -56,37 +63,39 @@ func runPrompt() {
 
 		line := scanner.Text()
 		run(line)
-		hadError = false
+		reporter.Reset()
 	}
 }
 
-func run(source string) {
+func run(source string) error {
 	lexer := NewLexer(source)
-	tokens := lexer.ScanTokens()
+	tokens, lexErrors := lexer.ScanTokens()
+
+	for _, err := range lexErrors {
+		reporter.Report(err)
+	}
+
+	if reporter.HadError() {
+		return fmt.Errorf("lexical error")
+	}
+
 	parser := NewParser(tokens)
 	statements, _ := parser.Parse()
 
-	if hadError {
-		return
+	if parser.HadError() {
+		return fmt.Errorf("parse error")
 	}
 
-	// fmt.Println((&AstPrinter{}).Print(expr))
-	interpreter.Interpret(statements)
-}
-
-func LexError(line int, msg string) {
-	report(line, "", msg)
-}
-
-func ParseError(tok Token, msg string) {
-	if tok.Type == EOF {
-		report(tok.Line, " at end", msg)
-	} else {
-		report(tok.Line, " at '"+tok.Lexeme+"'", msg)
+	interpreter := NewInterpreter()
+	err := interpreter.Interpret(statements)
+	if err != nil {
+		reporter.Report(err)
+		if runtimeErr, ok := err.(RuntimeError); ok {
+			fmt.Println(runtimeErr.Error())
+			return fmt.Errorf("runtime error")
+		}
+		return err
 	}
-}
 
-func report(line int, where, msg string) {
-	fmt.Println("[line ", line, "] Error", where, ": ", msg)
-	hadError = true
+	return nil
 }
