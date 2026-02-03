@@ -51,7 +51,7 @@ func (p *Parser) varDeclaration() (Stmt, error) {
 		return nil, err
 	}
 
-	var initializer Expr
+	var initializer Expr = nil
 	if p.match(EQUAL) {
 		initializer, err = p.expression()
 		if err != nil {
@@ -202,6 +202,10 @@ func (p *Parser) primary() (Expr, error) {
 		return NewLiteralExpr(p.previous().Literal), nil
 	}
 
+	if p.match(IDENTIFIER) {
+		return NewVariableExpr(p.previous()), nil
+	}
+
 	if p.match(LEFT_PAREN) {
 		expr, err := p.expression()
 		if err != nil {
@@ -214,7 +218,7 @@ func (p *Parser) primary() (Expr, error) {
 		return NewGroupingExpr(expr), nil
 	}
 
-	return nil, p.parseError(p.peek(), "Expect expression.")
+	return nil, p.parseError(p.peek(), "Failed to parse")
 }
 
 func (p *Parser) match(types ...TokenType) bool {

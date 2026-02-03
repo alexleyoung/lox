@@ -31,7 +31,7 @@ type Lexer struct {
 }
 
 func NewLexer(source string) *Lexer {
-	return &Lexer{source: source, reporter: NewErrorReporter(), errors: make([]error, 0)}
+	return &Lexer{source: source, reporter: NewErrorReporter(), errors: make([]error, 0), line: 1}
 }
 
 func (s *Lexer) ScanTokens() ([]Token, []error) {
