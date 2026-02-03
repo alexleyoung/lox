@@ -111,6 +111,7 @@ func (s *Lexer) scanToken() {
 
 	// whitespace
 	case ' ', '\t', '\r':
+
 	case '\n':
 		s.line++
 
