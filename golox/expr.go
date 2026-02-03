@@ -22,10 +22,8 @@ type UnaryExpr struct {
 	Op   Token
 }
 
-type TernaryExpr struct {
-	Guard Expr
-	Then  Expr
-	Else  Expr
+type VariableExpr struct {
+	Name Token
 }
 
 func NewBinaryExpr(op Token, left, right Expr) BinaryExpr {
@@ -44,8 +42,8 @@ func NewUnaryExpr(op Token, expr Expr) UnaryExpr {
 	return UnaryExpr{Op: op, Expr: expr}
 }
 
-func NewTernaryExpr(guard, thenBranch, elseBranch Expr) TernaryExpr {
-	return TernaryExpr{Guard: guard, Then: thenBranch, Else: elseBranch}
+func NewVariableExpr(name Token) VariableExpr {
+	return VariableExpr{Name: name}
 }
 
 func (e BinaryExpr) Accept(v Visitor) (any, error) {
@@ -64,6 +62,6 @@ func (e UnaryExpr) Accept(v Visitor) (any, error) {
 	return v.VisitUnaryExpr(e)
 }
 
-func (e TernaryExpr) Accept(v Visitor) (any, error) {
-	return v.VisitTernaryExpr(e)
+func (e VariableExpr) Accept(v Visitor) (any, error) {
+	return v.VisitVariableExpr(e)
 }
