@@ -31,7 +31,7 @@ func runFile(path string) error {
 		return err
 	}
 
-	err = run(string(f))
+	err = run(string(f), NewInterpreter())
 	if err != nil {
 		if err.Error() == "lexical error" {
 			os.Exit(65)
@@ -50,6 +50,7 @@ func runFile(path string) error {
 
 func runPrompt() {
 	scanner := bufio.NewScanner(os.Stdin)
+	interpreter := NewInterpreter()
 	for true {
 		fmt.Print("> ")
 
@@ -62,12 +63,12 @@ func runPrompt() {
 		}
 
 		line := scanner.Text()
-		run(line)
+		run(line, interpreter)
 		reporter.Reset()
 	}
 }
 
-func run(source string) error {
+func run(source string, interpreter *Interpreter) error {
 	lexer := NewLexer(source)
 	tokens, lexErrors := lexer.ScanTokens()
 
@@ -86,7 +87,6 @@ func run(source string) error {
 		return fmt.Errorf("parse error")
 	}
 
-	interpreter := NewInterpreter()
 	err := interpreter.Interpret(statements)
 	if err != nil {
 		reporter.Report(err)
