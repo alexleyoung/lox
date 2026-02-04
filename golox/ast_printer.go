@@ -19,6 +19,10 @@ func (p *AstPrinter) Print(expr Expr) (string, error) {
 	return s, nil
 }
 
+func (p *AstPrinter) VisitAssignmentExpr(expr AssignmentExpr) (any, error) {
+	return p.parenthesize("=", VariableExpr{Name: expr.Name}, expr.Expr)
+}
+
 func (p *AstPrinter) VisitBinaryExpr(expr BinaryExpr) (any, error) {
 	return p.parenthesize(expr.Op.Lexeme, expr.Left, expr.Right)
 }
