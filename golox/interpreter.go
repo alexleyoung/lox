@@ -55,39 +55,13 @@ func (i *Interpreter) VisitExpressionStmt(stmt ExpressionStmt) error {
 	return nil
 }
 
-func (i *Interpreter) VisitVariableExpr(expr VariableExpr) (any, error) {
-	value, err := i.environment.get(expr.Name)
-	if err != nil {
-		return nil, NewRuntimeError(expr.Name, err.Error())
-	}
-	return value, nil
-}
-
-func (i *Interpreter) VisitLiteralExpr(expr LiteralExpr) (any, error) {
-	return expr.Value, nil
-}
-
-func (i *Interpreter) VisitUnaryExpr(expr UnaryExpr) (any, error) {
-	v, err := i.evaluate(expr.Expr)
+func (i *Interpreter) VisitAssignmentExpr(expr AssignmentExpr) (any, error) {
+	value, err := i.evaluate(expr.Expr)
 	if err != nil {
 		return nil, err
 	}
-
-	switch expr.Op.Type {
-	case BANG:
-		return !i.isTruthy(v), nil
-	case MINUS:
-		if num, ok := v.(float64); ok {
-			return -num, nil
-		}
-		return nil, NewRuntimeError(expr.Op, "Operand must be a number.")
-	}
-
-	return nil, nil
-}
-
-func (i *Interpreter) VisitGroupingExpr(expr GroupingExpr) (any, error) {
-	return i.evaluate(expr.Expr)
+	i.environment.assign(expr.Name, value)
+	return value, nil
 }
 
 func (i *Interpreter) VisitBinaryExpr(expr BinaryExpr) (any, error) {
@@ -177,6 +151,41 @@ func (i *Interpreter) VisitBinaryExpr(expr BinaryExpr) (any, error) {
 	}
 
 	return nil, nil
+}
+
+func (i *Interpreter) VisitGroupingExpr(expr GroupingExpr) (any, error) {
+	return i.evaluate(expr.Expr)
+}
+
+func (i *Interpreter) VisitUnaryExpr(expr UnaryExpr) (any, error) {
+	v, err := i.evaluate(expr.Expr)
+	if err != nil {
+		return nil, err
+	}
+
+	switch expr.Op.Type {
+	case BANG:
+		return !i.isTruthy(v), nil
+	case MINUS:
+		if num, ok := v.(float64); ok {
+			return -num, nil
+		}
+		return nil, NewRuntimeError(expr.Op, "Operand must be a number.")
+	}
+
+	return nil, nil
+}
+
+func (i *Interpreter) VisitLiteralExpr(expr LiteralExpr) (any, error) {
+	return expr.Value, nil
+}
+
+func (i *Interpreter) VisitVariableExpr(expr VariableExpr) (any, error) {
+	value, err := i.environment.get(expr.Name)
+	if err != nil {
+		return nil, NewRuntimeError(expr.Name, err.Error())
+	}
+	return value, nil
 }
 
 func (i *Interpreter) isTruthy(v any) bool {

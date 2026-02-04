@@ -15,10 +15,20 @@ func (e *Environment) define(name string, value any) {
 	e.values[name] = value
 }
 
-func (e Environment) get(name Token) (any, error) {
+func (e *Environment) get(name Token) (any, error) {
 	val, ok := e.values[name.Lexeme]
 	if !ok {
-		return nil, NewEnvironmentError(name.Lexeme, "")
+		return nil, NewEnvironmentError(name, "")
 	}
 	return val, nil
+}
+
+func (e *Environment) assign(name Token, value any) error {
+	_, ok := e.values[name.Lexeme]
+	if !ok {
+		return NewEnvironmentError(name, "Undefined variable: '"+name.Lexeme+"'.")
+	}
+
+	e.values[name.Lexeme] = value
+	return nil
 }

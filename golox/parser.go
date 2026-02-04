@@ -100,7 +100,32 @@ func (p *Parser) expressionStatement() (Stmt, error) {
 }
 
 func (p *Parser) expression() (Expr, error) {
-	return p.equality()
+	return p.assignment()
+}
+
+func (p *Parser) assignment() (Expr, error) {
+	expr, err := p.equality()
+	if err != nil {
+		return nil, err
+	}
+
+	if p.match(EQUAL) {
+		equals := p.previous()
+		value, err := p.assignment()
+		if err != nil {
+			reporter.Report(err)
+		}
+
+		expr, ok := expr.(VariableExpr)
+		if ok {
+			name := expr.Name
+			return NewAssignmentExpr(name, value), nil
+		}
+
+		reporter.Report(NewParserError(equals, "Invalid assignment target."))
+	}
+
+	return expr, nil
 }
 
 func (p *Parser) equality() (Expr, error) {

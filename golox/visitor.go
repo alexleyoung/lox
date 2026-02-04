@@ -1,6 +1,7 @@
 package main
 
 type Visitor interface {
+	VisitAssignmentExpr(expr AssignmentExpr) (any, error)
 	VisitBinaryExpr(expr BinaryExpr) (any, error)
 	VisitGroupingExpr(expr GroupingExpr) (any, error)
 	VisitLiteralExpr(expr LiteralExpr) (any, error)

@@ -53,7 +53,7 @@ func (e RuntimeError) Line() int {
 }
 
 type EnvironmentError struct {
-	Name    string
+	Name    Token
 	Message string
 }
 
@@ -80,7 +80,7 @@ func NewRuntimeError(token Token, message string) RuntimeError {
 	return RuntimeError{Token: token, Message: message}
 }
 
-func NewEnvironmentError(name string, message string) EnvironmentError {
+func NewEnvironmentError(name Token, message string) EnvironmentError {
 	return EnvironmentError{Name: name, Message: message}
 }
 
