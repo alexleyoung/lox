@@ -1,11 +1,16 @@
 package main
 
 type Environment struct {
-	values map[string]any
+	enclosing *Environment
+	values    map[string]any
 }
 
-func NewEnvironment() Environment {
-	return Environment{values: make(map[string]any)}
+func NewEnvironment() *Environment {
+	return &Environment{enclosing: nil, values: make(map[string]any)}
+}
+
+func NewNestedEnvironment(enclosing *Environment) *Environment {
+	return &Environment{enclosing: enclosing, values: make(map[string]any)}
 }
 
 func (e *Environment) define(name string, value any) {
@@ -18,6 +23,9 @@ func (e *Environment) define(name string, value any) {
 func (e *Environment) get(name Token) (any, error) {
 	val, ok := e.values[name.Lexeme]
 	if !ok {
+		if e.enclosing != nil {
+			return e.enclosing.get(name)
+		}
 		return nil, NewEnvironmentError(name, "")
 	}
 	return val, nil
@@ -26,6 +34,9 @@ func (e *Environment) get(name Token) (any, error) {
 func (e *Environment) assign(name Token, value any) error {
 	_, ok := e.values[name.Lexeme]
 	if !ok {
+		if e.enclosing != nil {
+			return e.enclosing.assign(name, value)
+		}
 		return NewEnvironmentError(name, "Undefined variable: '"+name.Lexeme+"'.")
 	}
 
