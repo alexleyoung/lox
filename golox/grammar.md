@@ -23,8 +23,10 @@ varDecl        → "var" IDENTIFIER ( "=" expression )? ";" ;
 
 statement      → exprStmt
                | printStmt
-               | block ;
+               | blockStmt
+               | ifStmt ;
 
 exprStmt       → expression ";" ;
 printStmt      → "print" expression ";" ;
-block          → "{" declaration* "}" ;
+blockStmt      → "{" declaration* "}" ;
+ifStmt         → "if" "(" expression ")" statement ( "else" statement )? ;

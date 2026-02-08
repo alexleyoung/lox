@@ -14,4 +14,5 @@ type StmtVisitor interface {
 	VisitPrintStmt(stmt PrintStmt) error
 	VisitVariableStmt(stmt VariableStmt) error
 	VisitBlockStmt(stmt BlockStmt) error
+	VisitIfStmt(stmt IfStmt) error
 }

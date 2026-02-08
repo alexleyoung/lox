@@ -69,6 +69,9 @@ func (p *Parser) varDeclaration() (Stmt, error) {
 func (p *Parser) statement() (Stmt, error) {
 	// Check non-expression statements first and leave as a fallthrough
 	// "Hard to proactively recognize an expression from its first token"
+	if p.match(IF) {
+		return p.ifStatement()
+	}
 	if p.match(PRINT) {
 		return p.printStatement()
 	}
@@ -76,6 +79,30 @@ func (p *Parser) statement() (Stmt, error) {
 		return p.blockStatement()
 	}
 	return p.expressionStatement()
+}
+
+func (p *Parser) ifStatement() (Stmt, error) {
+	_, err := p.consume(LEFT_PAREN, "Expect '(' after 'if'.")
+	if err != nil {
+		return nil, err
+	}
+
+	expr, err := p.expression()
+	_, err = p.consume(RIGHT_PAREN, "Expect ')' after if condition.")
+	if err != nil {
+		return nil, err
+	}
+
+	thenBranch, err := p.statement()
+	var elseBranch Stmt = nil
+	if p.match(ELSE) {
+		elseBranch, err = p.statement()
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return NewIfStmt(expr, thenBranch, elseBranch), nil
 }
 
 func (p *Parser) printStatement() (Stmt, error) {
@@ -91,16 +118,16 @@ func (p *Parser) printStatement() (Stmt, error) {
 }
 
 func (p *Parser) blockStatement() (Stmt, error) {
-	block := NewBlockStmt()
+	stmts := make([]Stmt, 0)
 	for !p.check(RIGHT_BRACE) && !p.isAtEnd() {
 		stmt, err := p.declaration()
 		if err != nil {
 			return nil, err
 		}
-		block.statements = append(block.statements, stmt)
+		stmts = append(stmts, stmt)
 	}
 	_, err := p.consume(RIGHT_BRACE, "Expected closing brace '}'.")
-	return block, err
+	return NewBlockStmt(stmts), err
 }
 
 func (p *Parser) expressionStatement() (Stmt, error) {

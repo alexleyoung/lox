@@ -18,7 +18,13 @@ type PrintStmt struct {
 }
 
 type BlockStmt struct {
-	statements []Stmt
+	Statements []Stmt
+}
+
+type IfStmt struct {
+	Guard      Expr
+	ThenBranch Stmt
+	ElseBranch Stmt
 }
 
 func NewVariableStmt(name Token, initializer Expr) VariableStmt {
@@ -33,8 +39,12 @@ func NewPrintStmt(expr Expr) PrintStmt {
 	return PrintStmt{Expr: expr}
 }
 
-func NewBlockStmt() BlockStmt {
-	return BlockStmt{statements: make([]Stmt, 0)}
+func NewBlockStmt(statements []Stmt) BlockStmt {
+	return BlockStmt{Statements: statements}
+}
+
+func NewIfStmt(guard Expr, thenBranch Stmt, elseBranch Stmt) IfStmt {
+	return IfStmt{Guard: guard, ThenBranch: thenBranch, ElseBranch: elseBranch}
 }
 
 func (s ExpressionStmt) Accept(v StmtVisitor) error {
@@ -51,4 +61,8 @@ func (s VariableStmt) Accept(v StmtVisitor) error {
 
 func (s BlockStmt) Accept(v StmtVisitor) error {
 	return v.VisitBlockStmt(s)
+}
+
+func (s IfStmt) Accept(v StmtVisitor) error {
+	return v.VisitIfStmt(s)
 }

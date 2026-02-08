@@ -40,6 +40,20 @@ func (i *Interpreter) VisitVariableStmt(stmt VariableStmt) error {
 	return nil
 }
 
+func (i *Interpreter) VisitIfStmt(stmt IfStmt) error {
+	value, err := i.evaluate(stmt.Guard)
+	if err != nil {
+		return err
+	}
+
+	if i.isTruthy(value) {
+		return i.execute(stmt.ThenBranch)
+	} else if stmt.ElseBranch != nil {
+		return i.execute(stmt.ElseBranch)
+	}
+	return nil
+}
+
 func (i *Interpreter) VisitPrintStmt(stmt PrintStmt) error {
 	value, err := i.evaluate(stmt.Expr)
 	if err != nil {
@@ -63,7 +77,7 @@ func (i *Interpreter) VisitExpressionStmt(stmt ExpressionStmt) error {
 }
 
 func (i *Interpreter) VisitBlockStmt(stmt BlockStmt) error {
-	return i.executeBlock(stmt.statements, NewNestedEnvironment(i.environment))
+	return i.executeBlock(stmt.Statements, NewNestedEnvironment(i.environment))
 }
 
 func (i *Interpreter) executeBlock(stmts []Stmt, env *Environment) error {
