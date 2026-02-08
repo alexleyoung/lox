@@ -24,11 +24,13 @@ declaration    → varDecl
 varDecl        → "var" IDENTIFIER ( "=" expression )? ";" ;
 
 statement      → exprStmt
+               | ifStmt
                | printStmt
-               | blockStmt
-               | ifStmt ;
+               | whileStmt
+               | block ;
 
 exprStmt       → expression ";" ;
-printStmt      → "print" expression ";" ;
-blockStmt      → "{" declaration* "}" ;
 ifStmt         → "if" "(" expression ")" statement ( "else" statement )? ;
+printStmt      → "print" expression ";" ;
+whileStmt      → "while" "(" expression ")" statement ;
+blockStmt      → "{" declaration* "}" ;

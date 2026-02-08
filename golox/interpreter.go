@@ -40,6 +40,19 @@ func (i *Interpreter) VisitVariableStmt(stmt VariableStmt) error {
 	return nil
 }
 
+func (i *Interpreter) VisitExpressionStmt(stmt ExpressionStmt) error {
+	val, err := i.evaluate(stmt.Expr)
+	if err != nil {
+		return err
+	}
+
+	if i.repl {
+		fmt.Print(val)
+	}
+
+	return nil
+}
+
 func (i *Interpreter) VisitIfStmt(stmt IfStmt) error {
 	value, err := i.evaluate(stmt.Guard)
 	if err != nil {
@@ -63,16 +76,21 @@ func (i *Interpreter) VisitPrintStmt(stmt PrintStmt) error {
 	return nil
 }
 
-func (i *Interpreter) VisitExpressionStmt(stmt ExpressionStmt) error {
-	val, err := i.evaluate(stmt.Expr)
+func (i *Interpreter) VisitWhileStmt(stmt WhileStmt) error {
+	condition, err := i.evaluate(stmt.Condition)
 	if err != nil {
 		return err
 	}
-
-	if i.repl {
-		fmt.Print(val)
+	for i.isTruthy(condition) {
+		err := i.execute(stmt.Body)
+		if err != nil {
+			return err
+		}
+		condition, err = i.evaluate(stmt.Condition)
+		if err != nil {
+			return err
+		}
 	}
-
 	return nil
 }
 
