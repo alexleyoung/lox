@@ -51,9 +51,9 @@ func runFile(path string) error {
 func runPrompt() {
 	scanner := bufio.NewScanner(os.Stdin)
 	interpreter := NewInterpreter()
+	interpreter.repl = true
 	for true {
-		fmt.Print("> ")
-
+		fmt.Print("\n> ")
 		in := scanner.Scan()
 		if !in {
 			if err := scanner.Err(); err != nil {

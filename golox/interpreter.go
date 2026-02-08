@@ -7,6 +7,8 @@ import (
 type Interpreter struct {
 	environment *Environment
 	reporter    *ErrorReporter
+
+	repl bool
 }
 
 func NewInterpreter() *Interpreter {
@@ -48,10 +50,15 @@ func (i *Interpreter) VisitPrintStmt(stmt PrintStmt) error {
 }
 
 func (i *Interpreter) VisitExpressionStmt(stmt ExpressionStmt) error {
-	_, err := i.evaluate(stmt.Expr)
+	val, err := i.evaluate(stmt.Expr)
 	if err != nil {
 		return err
 	}
+
+	if i.repl {
+		fmt.Print(val)
+	}
+
 	return nil
 }
 
