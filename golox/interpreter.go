@@ -5,7 +5,7 @@ import (
 )
 
 type Interpreter struct {
-	environment Environment
+	environment *Environment
 	reporter    *ErrorReporter
 }
 
@@ -52,6 +52,23 @@ func (i *Interpreter) VisitExpressionStmt(stmt ExpressionStmt) error {
 	if err != nil {
 		return err
 	}
+	return nil
+}
+
+func (i *Interpreter) VisitBlockStmt(stmt BlockStmt) error {
+	return i.executeBlock(stmt.statements, NewNestedEnvironment(i.environment))
+}
+
+func (i *Interpreter) executeBlock(stmts []Stmt, env *Environment) error {
+	previous := i.environment
+	i.environment = env
+	for _, stmt := range stmts {
+		err := i.execute(stmt)
+		if err != nil {
+			return err
+		}
+	}
+	i.environment = previous
 	return nil
 }
 

@@ -72,6 +72,9 @@ func (p *Parser) statement() (Stmt, error) {
 	if p.match(PRINT) {
 		return p.printStatement()
 	}
+	if p.match(LEFT_BRACE) {
+		return p.blockStatement()
+	}
 	return p.expressionStatement()
 }
 
@@ -85,6 +88,19 @@ func (p *Parser) printStatement() (Stmt, error) {
 		return nil, err
 	}
 	return NewPrintStmt(expr), nil
+}
+
+func (p *Parser) blockStatement() (Stmt, error) {
+	block := NewBlockStmt()
+	for !p.check(RIGHT_BRACE) && !p.isAtEnd() {
+		stmt, err := p.declaration()
+		if err != nil {
+			return nil, err
+		}
+		block.statements = append(block.statements, stmt)
+	}
+	_, err := p.consume(RIGHT_BRACE, "Expected closing brace '}'.")
+	return block, err
 }
 
 func (p *Parser) expressionStatement() (Stmt, error) {
