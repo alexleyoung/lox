@@ -75,10 +75,25 @@ func (p *Parser) statement() (Stmt, error) {
 	if p.match(PRINT) {
 		return p.printStatement()
 	}
+	if p.match(WHILE) {
+		return p.whileStatement()
+	}
 	if p.match(LEFT_BRACE) {
 		return p.blockStatement()
 	}
 	return p.expressionStatement()
+}
+
+func (p *Parser) expressionStatement() (Stmt, error) {
+	expr, err := p.expression()
+	if err != nil {
+		return nil, err
+	}
+	_, err = p.consume(SEMICOLON, "Expect ';' after value.")
+	if err != nil {
+		return nil, err
+	}
+	return NewExpressionStmt(expr), nil
 }
 
 func (p *Parser) ifStatement() (Stmt, error) {
@@ -117,6 +132,26 @@ func (p *Parser) printStatement() (Stmt, error) {
 	return NewPrintStmt(expr), nil
 }
 
+func (p *Parser) whileStatement() (Stmt, error) {
+	_, err := p.consume(LEFT_PAREN, "Expect '(' after 'while'.")
+	if err != nil {
+		return nil, err
+	}
+	condition, err := p.expression()
+	if err != nil {
+		return nil, err
+	}
+	_, err = p.consume(RIGHT_PAREN, "Expect ')' after condition.")
+	if err != nil {
+		return nil, err
+	}
+	body, err := p.statement()
+	if err != nil {
+		return nil, err
+	}
+	return NewWhileStmt(condition, body), nil
+}
+
 func (p *Parser) blockStatement() (Stmt, error) {
 	stmts := make([]Stmt, 0)
 	for !p.check(RIGHT_BRACE) && !p.isAtEnd() {
@@ -128,18 +163,6 @@ func (p *Parser) blockStatement() (Stmt, error) {
 	}
 	_, err := p.consume(RIGHT_BRACE, "Expected closing brace '}'.")
 	return NewBlockStmt(stmts), err
-}
-
-func (p *Parser) expressionStatement() (Stmt, error) {
-	expr, err := p.expression()
-	if err != nil {
-		return nil, err
-	}
-	_, err = p.consume(SEMICOLON, "Expect ';' after value.")
-	if err != nil {
-		return nil, err
-	}
-	return NewExpressionStmt(expr), nil
 }
 
 func (p *Parser) expression() (Expr, error) {
