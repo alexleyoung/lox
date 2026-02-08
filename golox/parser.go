@@ -147,7 +147,7 @@ func (p *Parser) expression() (Expr, error) {
 }
 
 func (p *Parser) assignment() (Expr, error) {
-	expr, err := p.equality()
+	expr, err := p.or()
 	if err != nil {
 		return nil, err
 	}
@@ -166,6 +166,42 @@ func (p *Parser) assignment() (Expr, error) {
 		}
 
 		reporter.Report(NewParserError(equals, "Invalid assignment target."))
+	}
+
+	return expr, nil
+}
+
+func (p *Parser) or() (Expr, error) {
+	expr, err := p.and()
+	if err != nil {
+		return nil, err
+	}
+
+	for p.match(OR) {
+		op := p.previous()
+		right, err := p.and()
+		if err != nil {
+			return nil, err
+		}
+		expr = NewLogicalExpr(op, expr, right)
+	}
+
+	return expr, nil
+}
+
+func (p *Parser) and() (Expr, error) {
+	expr, err := p.equality()
+	if err != nil {
+		return nil, err
+	}
+
+	for p.match(AND) {
+		op := p.previous()
+		right, err := p.equality()
+		if err != nil {
+			return nil, err
+		}
+		expr = NewLogicalExpr(op, expr, right)
 	}
 
 	return expr, nil

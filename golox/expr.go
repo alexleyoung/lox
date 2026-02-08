@@ -9,6 +9,11 @@ type AssignmentExpr struct {
 	Expr Expr
 }
 
+type LogicalExpr struct {
+	Left, Right Expr
+	Op          Token
+}
+
 type BinaryExpr struct {
 	Left, Right Expr
 	Op          Token
@@ -35,6 +40,10 @@ func NewAssignmentExpr(name Token, expr Expr) AssignmentExpr {
 	return AssignmentExpr{Name: name, Expr: expr}
 }
 
+func NewLogicalExpr(op Token, left, right Expr) LogicalExpr {
+	return LogicalExpr{Op: op, Left: left, Right: right}
+}
+
 func NewBinaryExpr(op Token, left, right Expr) BinaryExpr {
 	return BinaryExpr{Op: op, Left: left, Right: right}
 }
@@ -57,6 +66,10 @@ func NewVariableExpr(name Token) VariableExpr {
 
 func (e AssignmentExpr) Accept(v Visitor) (any, error) {
 	return v.VisitAssignmentExpr(e)
+}
+
+func (e LogicalExpr) Accept(v Visitor) (any, error) {
+	return v.VisitLogicalExpr(e)
 }
 
 func (e BinaryExpr) Accept(v Visitor) (any, error) {

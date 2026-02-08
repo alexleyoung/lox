@@ -102,6 +102,26 @@ func (i *Interpreter) VisitAssignmentExpr(expr AssignmentExpr) (any, error) {
 	return value, nil
 }
 
+func (i *Interpreter) VisitLogicalExpr(expr LogicalExpr) (any, error) {
+	left, err := i.evaluate(expr.Left)
+	if err != nil {
+		return nil, err
+	}
+
+	// short circuit
+	if expr.Op.Type == OR {
+		if i.isTruthy(left) {
+			return left, nil
+		}
+	} else {
+		if !i.isTruthy(left) {
+			return left, nil
+		}
+	}
+
+	return i.evaluate(expr.Right)
+}
+
 func (i *Interpreter) VisitBinaryExpr(expr BinaryExpr) (any, error) {
 	left, err := i.evaluate(expr.Left)
 	if err != nil {
