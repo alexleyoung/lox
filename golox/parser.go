@@ -134,7 +134,7 @@ func (p *Parser) forStatement() (Stmt, error) {
 
 	var increment Expr = nil
 	if !p.check(RIGHT_PAREN) {
-		condition, err = p.expression()
+		increment, err = p.expression()
 		if err != nil {
 			return nil, err
 		}
@@ -147,6 +147,19 @@ func (p *Parser) forStatement() (Stmt, error) {
 	body, err := p.statement()
 	if err != nil {
 		return nil, err
+	}
+
+	if increment != nil {
+		body = NewBlockStmt([]Stmt{body, NewExpressionStmt(increment)})
+	}
+
+	if condition == nil {
+		condition = NewLiteralExpr(true)
+	}
+	body = NewWhileStmt(condition, body)
+
+	if initializer != nil {
+		body = NewBlockStmt([]Stmt{initializer, body})
 	}
 
 	return body, nil
