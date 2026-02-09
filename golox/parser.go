@@ -72,6 +72,9 @@ func (p *Parser) statement() (Stmt, error) {
 	if p.match(IF) {
 		return p.ifStatement()
 	}
+	if p.match(FOR) {
+		return p.forStatement()
+	}
 	if p.match(PRINT) {
 		return p.printStatement()
 	}
@@ -94,6 +97,59 @@ func (p *Parser) expressionStatement() (Stmt, error) {
 		return nil, err
 	}
 	return NewExpressionStmt(expr), nil
+}
+
+func (p *Parser) forStatement() (Stmt, error) {
+	_, err := p.consume(LEFT_PAREN, "Expect '(' after 'for'.")
+	if err != nil {
+		return nil, err
+	}
+
+	var initializer Stmt = nil
+	if p.match(SEMICOLON) {
+		initializer = NewExpressionStmt(nil)
+	} else if p.match(VAR) {
+		initializer, err = p.varDeclaration()
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		initializer, err = p.expressionStatement()
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	var condition Expr = nil
+	if !p.check(SEMICOLON) {
+		condition, err = p.expression()
+		if err != nil {
+			return nil, err
+		}
+	}
+	_, err = p.consume(SEMICOLON, "Expect ';' after loop condition.")
+	if err != nil {
+		return nil, err
+	}
+
+	var increment Expr = nil
+	if !p.check(RIGHT_PAREN) {
+		condition, err = p.expression()
+		if err != nil {
+			return nil, err
+		}
+	}
+	_, err = p.consume(RIGHT_PAREN, "Expect ')' after for clauses.")
+	if err != nil {
+		return nil, err
+	}
+
+	body, err := p.statement()
+	if err != nil {
+		return nil, err
+	}
+
+	return body, nil
 }
 
 func (p *Parser) ifStatement() (Stmt, error) {
