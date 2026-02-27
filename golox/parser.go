@@ -312,7 +312,27 @@ func (p *Parser) unary() (Expr, error) {
 		return NewUnaryExpr(op, right), nil
 	}
 
-	return p.primary()
+	return p.call()
+}
+
+func (p *Parser) call() (Expr, error) {
+	expr, err := p.primary()
+	if err != nil {
+		return nil, err
+	}
+
+	for true {
+		if p.match(LEFT_PAREN) {
+			expr, err = p.finishCall(expr)
+			if err != nil {
+				return nil, err
+			}
+		} else {
+			break
+		}
+	}
+
+	return expr, nil
 }
 
 func (p *Parser) primary() (Expr, error) {
@@ -407,4 +427,29 @@ func (p *Parser) synchronize() {
 	}
 
 	p.advance()
+}
+
+func (p *Parser) finishCall(expr Expr) (Expr, error) {
+	arguments := make([]Expr, 0)
+	if !p.check(RIGHT_PAREN) {
+		arg, err := p.expression()
+		if err != nil {
+			return nil, err
+		}
+		arguments = append(arguments, arg)
+		for p.match(COMMA) {
+			arg, err := p.expression()
+			if err != nil {
+				return nil, err
+			}
+			arguments = append(arguments, arg)
+		}
+	}
+
+	paren, err := p.consume(RIGHT_PAREN, "Expect ')' after arguments.")
+	if err != nil {
+		return nil, err
+	}
+
+	return NewCallExpr(expr, paren, arguments), nil
 }

@@ -32,6 +32,12 @@ type UnaryExpr struct {
 	Op   Token
 }
 
+type CallExpr struct {
+	Callee Expr
+	Paren  Token
+	Args   []Expr
+}
+
 type VariableExpr struct {
 	Name Token
 }
@@ -60,6 +66,10 @@ func NewUnaryExpr(op Token, expr Expr) UnaryExpr {
 	return UnaryExpr{Op: op, Expr: expr}
 }
 
+func NewCallExpr(callee Expr, paren Token, args []Expr) CallExpr {
+	return CallExpr{Callee: callee, Paren: paren, Args: args}
+}
+
 func NewVariableExpr(name Token) VariableExpr {
 	return VariableExpr{Name: name}
 }
@@ -86,6 +96,10 @@ func (e LiteralExpr) Accept(v Visitor) (any, error) {
 
 func (e UnaryExpr) Accept(v Visitor) (any, error) {
 	return v.VisitUnaryExpr(e)
+}
+
+func (e CallExpr) Accept(v Visitor) (any, error) {
+	return v.VisitCallExpr(e)
 }
 
 func (e VariableExpr) Accept(v Visitor) (any, error) {

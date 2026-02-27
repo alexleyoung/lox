@@ -9,11 +9,14 @@ equality       → comparison ( ( "!=" | "==" ) comparison )* ;
 comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
 term           → factor ( ( "-" | "+" ) factor )* ;
 factor         → unary ( ( "/" | "*" ) unary )* ;
-unary          → ( "!" | "-" ) unary | primary ;
+unary          → ( "!" | "-" ) unary | call ;
+call           → primary ( "(" arguments? ")" )* ;
 primary        → "true" | "false" | "nil"
                | NUMBER | STRING
                | "(" expression ")"
                | IDENTIFIER ;
+
+arguments      → expression ( "," expression )* ;
 
 # statements
 program        → declaration* EOF ;
@@ -34,3 +37,4 @@ ifStmt         → "if" "(" expression ")" statement ( "else" statement )? ;
 printStmt      → "print" expression ";" ;
 whileStmt      → "while" "(" expression ")" statement ;
 blockStmt      → "{" declaration* "}" ;
+breakStmt      → "break" ";" ;

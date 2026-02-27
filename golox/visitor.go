@@ -7,6 +7,7 @@ type Visitor interface {
 	VisitGroupingExpr(expr GroupingExpr) (any, error)
 	VisitLiteralExpr(expr LiteralExpr) (any, error)
 	VisitUnaryExpr(expr UnaryExpr) (any, error)
+	VisitCallExpr(expr CallExpr) (any, error)
 	VisitVariableExpr(expr VariableExpr) (any, error)
 }
 
