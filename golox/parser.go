@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"slices"
 )
 
@@ -33,6 +34,15 @@ func (p *Parser) HadError() bool {
 }
 
 func (p *Parser) declaration() (Stmt, error) {
+	if p.match(FUN) {
+		stmt, err := p.funDeclaration("function")
+		if err != nil {
+			p.synchronize()
+			return nil, err
+		}
+		return stmt, nil
+	}
+
 	if p.match(VAR) {
 		stmt, err := p.varDeclaration()
 		if err != nil {
@@ -43,6 +53,55 @@ func (p *Parser) declaration() (Stmt, error) {
 	}
 
 	return p.statement()
+}
+
+func (p *Parser) funDeclaration(kind string) (Stmt, error) {
+	name, err := p.consume(IDENTIFIER, fmt.Sprintf("Expect %s name.", kind))
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = p.consume(LEFT_PAREN, "Expect '(' after function name.")
+	if err != nil {
+		return nil, err
+	}
+
+	var params []Token
+	if !p.check(RIGHT_PAREN) {
+		param, err := p.consume(IDENTIFIER, "Expect parameter name.")
+		if err != nil {
+			return nil, err
+		}
+		params = append(params, param)
+		for p.match(COMMA) {
+			if len(params) >= 255 {
+				p.parseError(params[len(params)-1], "Can't have more than 255 parameters.")
+			}
+			param, err := p.consume(IDENTIFIER, "Expect parameter name.")
+			if err != nil {
+				return nil, err
+			}
+			params = append(params, param)
+		}
+	}
+
+	_, err = p.consume(RIGHT_PAREN, "Expect ')' after function name.")
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = p.consume(RIGHT_PAREN, fmt.Sprintf("Expect '{' before %s body."))
+	if err != nil {
+		return nil, err
+	}
+
+	stmt, err := p.blockStatement()
+	if err != nil {
+		return nil, err
+	}
+	block, _ := stmt.(BlockStmt)
+
+	return NewFunctionStmt(name, params, block.Statements), nil
 }
 
 func (p *Parser) varDeclaration() (Stmt, error) {
@@ -432,6 +491,10 @@ func (p *Parser) synchronize() {
 func (p *Parser) finishCall(expr Expr) (Expr, error) {
 	arguments := make([]Expr, 0)
 	if !p.check(RIGHT_PAREN) {
+		if len(arguments) >= 255 {
+			p.parseError(p.peek(), "Can't have more than 255 arguments.")
+		}
+
 		arg, err := p.expression()
 		if err != nil {
 			return nil, err

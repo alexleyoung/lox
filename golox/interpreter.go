@@ -5,6 +5,8 @@ import (
 )
 
 type Interpreter struct {
+	Globals *Environment
+
 	environment *Environment
 	reporter    *ErrorReporter
 
@@ -12,7 +14,11 @@ type Interpreter struct {
 }
 
 func NewInterpreter() *Interpreter {
-	return &Interpreter{environment: NewEnvironment(), reporter: NewErrorReporter()}
+	globals := NewEnvironment()
+
+	globals.define("clock", ClockNativeFn{})
+
+	return &Interpreter{environment: globals, Globals: globals, reporter: NewErrorReporter()}
 }
 
 func (i *Interpreter) Interpret(statements []Stmt) error {
@@ -250,6 +256,34 @@ func (i *Interpreter) VisitUnaryExpr(expr UnaryExpr) (any, error) {
 	}
 
 	return nil, nil
+}
+
+func (i *Interpreter) VisitCallExpr(expr CallExpr) (any, error) {
+	callee, err := i.evaluate(expr.Callee)
+	if err != nil {
+		return nil, err
+	}
+
+	var args []any
+	for _, arg := range expr.Args {
+		evalArg, err := i.evaluate(arg)
+		if err != nil {
+			return nil, err
+		}
+		args = append(args, evalArg)
+	}
+
+	function, ok := callee.(Callable)
+	if !ok {
+		return nil, NewRuntimeError(expr.Paren, "Can only call functions and classes.")
+	}
+
+	arity := function.Arity()
+	if arity != len(args) {
+		return nil, NewRuntimeError(expr.Paren, fmt.Sprintf("Expected %d arguments but got %d.", arity, len(args)))
+	}
+
+	return function.Call(i, args)
 }
 
 func (i *Interpreter) VisitLiteralExpr(expr LiteralExpr) (any, error) {

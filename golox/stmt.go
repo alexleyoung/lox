@@ -4,6 +4,12 @@ type Stmt interface {
 	Accept(v StmtVisitor) error
 }
 
+type FunctionStmt struct {
+	Name   Token
+	Params []Token
+	Body   []Stmt
+}
+
 type VariableStmt struct {
 	Name        Token
 	Initializer Expr
@@ -32,6 +38,10 @@ type BlockStmt struct {
 	Statements []Stmt
 }
 
+func NewFunctionStmt(name Token, params []Token, body []Stmt) FunctionStmt {
+	return FunctionStmt{name, params, body}
+}
+
 func NewVariableStmt(name Token, initializer Expr) VariableStmt {
 	return VariableStmt{Name: name, Initializer: initializer}
 }
@@ -54,6 +64,10 @@ func NewWhileStmt(condition Expr, body Stmt) WhileStmt {
 
 func NewBlockStmt(statements []Stmt) BlockStmt {
 	return BlockStmt{Statements: statements}
+}
+
+func (s FunctionStmt) Accept(v StmtVisitor) error {
+	return v.VisitFunctionStmt(s)
 }
 
 func (s VariableStmt) Accept(v StmtVisitor) error {

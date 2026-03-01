@@ -12,6 +12,7 @@ type Visitor interface {
 }
 
 type StmtVisitor interface {
+	VisitFunctionStmt(stmt FunctionStmt) error
 	VisitVariableStmt(stmt VariableStmt) error
 	VisitExpressionStmt(stmt ExpressionStmt) error
 	VisitPrintStmt(stmt PrintStmt) error
