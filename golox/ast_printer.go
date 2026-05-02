@@ -46,6 +46,10 @@ func (p *AstPrinter) VisitUnaryExpr(expr UnaryExpr) (any, error) {
 	return p.parenthesize(expr.Op.Lexeme, expr.Expr)
 }
 
+func (p *AstPrinter) VisitCallExpr(expr CallExpr) (any, error) {
+	return "not implemented", nil
+}
+
 func (p *AstPrinter) VisitVariableExpr(expr VariableExpr) (any, error) {
 	return expr.Name.Lexeme, nil
 }

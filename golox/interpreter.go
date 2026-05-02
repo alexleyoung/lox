@@ -31,6 +31,12 @@ func (i *Interpreter) Interpret(statements []Stmt) error {
 	return nil
 }
 
+func (i *Interpreter) VisitFunctionStmt(stmt FunctionStmt) error {
+	function := NewFunction(stmt)
+	i.environment.define(stmt.Name.Lexeme, function)
+	return nil
+}
+
 func (i *Interpreter) VisitVariableStmt(stmt VariableStmt) error {
 	var value any = nil
 	var err error
