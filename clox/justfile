@@ -1,0 +1,8 @@
+default: run
+
+run: build
+  ./build/out
+
+build:
+  mkdir -p build
+  gcc -o build/out -Iinclude main.c src/*.c
